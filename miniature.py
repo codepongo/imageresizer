@@ -11,7 +11,7 @@ def miniature(directory, files, prefix):
     i = 0
     for f in files:
         print 'ImageResize %s%s%s%02d.jpg -s 30 -i %s ' % (directory, os.sep, prefix, i, f)
-        os.popen('ImageResize %s%s%s%02d.jpg -s 30 -i %s ' % (directory, os.sep, prefix, i, f))
+        os.popen('%s%sImageResize %s%s%s%02d.jpg -s 30 -i %s ' % (os.path.dirname(os.path.abspath(__file__)), os.sep, directory, os.sep, prefix, i, f))
         i += 1
 
 if __name__ == '__main__':
