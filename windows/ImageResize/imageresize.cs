@@ -30,7 +30,9 @@ namespace Tutorial
             }
             string input = "";
             string output = "";
-            int percent = 0;
+            int percent = -1;
+            int width = 0;
+            int height = 0;
             int i = 0;
             while( i < args.Length)
             {
@@ -52,7 +54,16 @@ namespace Tutorial
                     i++;
                     if (i < args.Length)
                     {
-                        percent = int.Parse(args[i]); 
+                        string[] s = args[i].Split('x');
+                        if (1 == s.Length) //percent
+                        { 
+                            percent = int.Parse(args[i]);
+                        }
+                        else
+                        {
+                            width = int.Parse(s[0]);
+                            height = int.Parse(s[1]);
+                        }
                         
                     }
                     else
@@ -77,20 +88,56 @@ namespace Tutorial
 
 			//create a image object containing a verticel photograph
 			Image from = Image.FromFile(input);
-
-            Image to = ScaleByPercent(from, percent);
-            to.Save(output, ImageFormat.Jpeg);
-			to.Dispose();
-
+            Image to;
+            if (-1 == percent)
+            {
+                to = ScaleByWithAndHeight(from, width, height);
+                to.Save(output, ImageFormat.Png);
+                to.Dispose();
+            }
+            else
+            {
+                to = ScaleByPercent(from, percent);
+                to.Save(output, ImageFormat.Jpeg);
+                to.Dispose();
+            }
 		}
         static void Help()
         {
             Console.Write(System.IO.Path.GetFileName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase) +
-@" <output> <-i input> <-s percent> [-help]
+@" <output> <-i input> <-s percent|WidthxHeight> [-help]
 output - output image file name
 -i input - input image file name
 -s percent  - scale percent such as -s 70 means sclae 70%
+-s WidthxHeight - the output image with and height e.g. -s 100x100
 -h - print help information");
+        }
+        static Image ScaleByWithAndHeight(Image imgPhoto, int w, int h)
+        {
+ 
+            int sourceX = 0;
+            int sourceY = 0;
+            int sourceWidth = imgPhoto.Width;
+            int sourceHeight = imgPhoto.Height;
+	
+            int destX = 0;
+            int destY = 0;
+            int destWidth = w;
+            int destHeight = h;
+
+            Bitmap bmPhoto = new Bitmap(destWidth, destHeight, PixelFormat.Format24bppRgb);
+            bmPhoto.SetResolution(imgPhoto.HorizontalResolution, imgPhoto.VerticalResolution);
+
+            Graphics grPhoto = Graphics.FromImage(bmPhoto);
+            grPhoto.InterpolationMode = InterpolationMode.HighQualityBicubic;
+
+            grPhoto.DrawImage(imgPhoto,
+                new Rectangle(destX, destY, destWidth, destHeight),
+                new Rectangle(sourceX, sourceY, sourceWidth, sourceHeight),
+                GraphicsUnit.Pixel);
+
+            grPhoto.Dispose();
+            return bmPhoto;
         }
 		static Image ScaleByPercent(Image imgPhoto, int Percent)
 		{
